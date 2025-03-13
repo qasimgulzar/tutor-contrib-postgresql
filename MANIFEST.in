@@ -1,0 +1,2 @@
+recursive-include tutorpostgresql/patches *
+recursive-include tutorpostgresql/templates *

@@ -1,0 +1,9 @@
+.*.swp
+!.gitignore
+TODO
+__pycache__
+*.egg-info/
+/build/
+/dist/
+/tutor-contrib-postgresql.iml
+*.egg
