@@ -2,7 +2,6 @@
 # POSTGRESQL
 postgresql:
   image: {{POSTGRESQL_IMAGE}}
-  container_name: postgresql
   volumes:
     - ../../data/postgresql:/var/lib/postgresql/data
   environment:
