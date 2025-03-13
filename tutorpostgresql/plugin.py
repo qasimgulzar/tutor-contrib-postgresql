@@ -15,8 +15,8 @@ config = {
         "VERSION": __version__,
         "IMAGE": "postgres:14-alpine",
         "HOST": "postgresql",
-        "USER": 'openedx',
-        "DB": 'openedx',
+        "USER": "openedx",
+        "DB": "openedx",
     },
     "overrides": {
         #  Running MYSQL in parallel with PostgreSQL for development.
@@ -25,7 +25,7 @@ config = {
     },
     "unique": {
         "PASSWORD": "{{ 8|random_string }}",
-    }
+    },
 }
 
 hooks.Filters.CONFIG_DEFAULTS.add_items(
@@ -34,7 +34,10 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'POSTGRESQL_'.
         ("RUN_POSTGRESQL", True),
-        *[(f"POSTGRESQL_{key}", value) for key, value in config.get("defaults", {}).items()]
+        *[
+            (f"POSTGRESQL_{key}", value)
+            for key, value in config.get("defaults", {}).items()
+        ],
     ]
 )
 
@@ -45,7 +48,10 @@ hooks.Filters.CONFIG_UNIQUE.add_items(
         # Each new setting is a pair: (setting_name, unique_generated_value).
         # Prefix your setting names with 'POSTGRESQL_'.
         # For example:
-        *[(f"POSTGRESQL_{key}", value) for key, value in config.get("unique", {}).items()]
+        *[
+            (f"POSTGRESQL_{key}", value)
+            for key, value in config.get("unique", {}).items()
+        ]
     ]
 )
 
