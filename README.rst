@@ -1,7 +1,7 @@
-postgresql plugin for `Tutor <https://docs.tutor.edly.io>`__
+PostgreSQL plugin for `Tutor <https://docs.tutor.edly.io>`__
 ############################################################
 
-postgresql plugin for Tutor
+This plugin provides a PostgreSQL database backend for Tutor.
 
 
 Installation
