@@ -15,8 +15,10 @@ config = {
         "VERSION": __version__,
         "IMAGE": "postgres:14-alpine",
         "HOST": "postgresql",
-        "USER": "openedx",
-        "DB": "openedx",
+        "PORT": 5432,
+        "ROOT_USER": "openedx",
+        "OPENEDX_DB": "openedx",
+        "OPENEDX_USER": "openedx",
     },
     "overrides": {
         #  Running MYSQL in parallel with PostgreSQL for development.
@@ -24,7 +26,8 @@ config = {
         # "RUN_MYSQL": False # Disable MySQL
     },
     "unique": {
-        "PASSWORD": "{{ 8|random_string }}",
+        "ROOT_PASSWORD": "{{ 8|random_string }}",
+        "OPENEDX_PASSWORD": "{{ 8|random_string }}",
     },
 }
 
@@ -77,6 +80,7 @@ MY_INIT_TASKS: list[tuple[str, tuple[str, ...]]] = [
     # tutorpostgresql/templates/postgresql/tasks/lms/init.sh
     # And then add the line:
     ### ("lms", ("postgresql", "tasks", "lms", "init.sh")),
+    ("postgresql", ("postgresql", "tasks", "postgresql", "init")),
 ]
 
 # For each task added to MY_INIT_TASKS, we load the task template
@@ -89,7 +93,8 @@ for service, template_path in MY_INIT_TASKS:
     )
     with open(full_path, encoding="utf-8") as init_task_file:
         init_task: str = init_task_file.read()
-    hooks.Filters.CLI_DO_INIT_TASKS.add_item((service, init_task))
+    # Raise the priority of the init job so that the DB is initialized before the migrations are applied
+    hooks.Filters.CLI_DO_INIT_TASKS.add_item((service, init_task), priority=hooks.priorities.HIGH)
 
 ########################################
 # DOCKER IMAGE MANAGEMENT
