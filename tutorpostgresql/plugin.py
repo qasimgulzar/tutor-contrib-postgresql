@@ -16,7 +16,7 @@ config = {
         "IMAGE": "postgres:14-alpine",
         "HOST": "postgresql",
         "PORT": 5432,
-        "ROOT_USER": "openedx",
+        "ROOT_USER": "postgres",
         "OPENEDX_DB": "openedx",
         "OPENEDX_USER": "openedx",
     },
