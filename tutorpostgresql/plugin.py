@@ -3,6 +3,7 @@ from glob import glob
 
 import click
 import importlib_resources
+import shlex
 import typing as t
 
 from tutor import hooks
@@ -216,6 +217,32 @@ for path in glob(str(importlib_resources.files("tutorpostgresql") / "patches" / 
 # Now, you can run your job like this:
 #   $ tutor local do say-hi --name="Qasim Gulzar"
 
+@click.command(context_settings={"ignore_unknown_options": True})
+@click.option(
+    "--database",
+    is_flag=False,
+    nargs=1,
+    default="{{ POSTGRESQL_OPENEDX_DB }}",
+    show_default=True,
+    required=True,
+    type=str,
+    help="Database to connect to when the shell executes.",
+)
+@click.argument("args", nargs=-1)
+def postgresqlshell(database: str, args: list[str]) -> t.Iterable[tuple[str, str]]:
+    """
+    Open an PostgreSQL shell as root connected to the openedx database
+
+    Extra arguments will be passed to the `postgressql` command verbatim. For instance, to
+    show tables from the "openedx" database, run `do postgresqlshell -c '\dt'.
+    """
+    command = "psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }}"
+    command += f"/{database}"
+    if args:
+        command += " " + shlex.join(args)  # pylint: disable=protected-access
+    yield ("postgresql", command)
+
+hooks.Filters.CLI_DO_COMMANDS.add_item(postgresqlshell)
 
 #######################################
 # CUSTOM CLI COMMANDS
