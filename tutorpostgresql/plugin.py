@@ -10,7 +10,7 @@ from .__about__ import __version__
 ########################################
 # CONFIGURATION
 ########################################
-config = {
+config: dict[str, dict[str, str | int]] = {
     "defaults": {
         "VERSION": __version__,
         "IMAGE": "postgres:14-alpine",
