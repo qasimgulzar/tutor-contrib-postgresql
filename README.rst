@@ -14,9 +14,23 @@ Installation
 Usage
 *****
 
+First, enable the plugin itself
+
 .. code-block:: bash
 
     tutor plugins enable postgresql
+
+Then, we need to build the openedx to bind the necessary postgresql packages and libraries into the image
+
+.. code-block:: bash
+
+    tutor images build openedx
+
+Finally, launch the platform to initialize the database with the services.
+
+.. code-block:: bash
+
+    tutor local launch
 
 
 License

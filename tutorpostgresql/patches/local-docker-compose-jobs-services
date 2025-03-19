@@ -1,0 +1,3 @@
+postgresql-job:
+    image: {{ POSTGRESQL_IMAGE }}
+    depends_on: {{ [("postgresql", RUN_POSTGRESQL)]|list_if }}

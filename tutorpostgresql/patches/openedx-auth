@@ -1,0 +1,11 @@
+{%- if RUN_POSTGRESQL and not RUN_MYSQL %}
+DATABASES:
+  default:
+    ENGINE: "django.db.backends.postgresql"
+    HOST: "{{ POSTGRESQL_HOST }}"
+    PORT: {{ POSTGRESQL_PORT }}
+    NAME: "{{ POSTGRESQL_OPENEDX_DB }}"
+    USER: "{{ POSTGRESQL_OPENEDX_USER }}"
+    PASSWORD: "{{ POSTGRESQL_OPENEDX_PASSWORD }}"
+    ATOMIC_REQUESTS: true
+{%- endif %}

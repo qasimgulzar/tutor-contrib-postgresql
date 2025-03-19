@@ -1,0 +1,21 @@
+echo "Initialising postgresql..."
+postgresql_connection_max_attempts=10
+postgresql_connection_attempt=0
+until pg_isready -d "postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }}"
+do
+    postgresql_connection_attempt=$(expr $postgresql_connection_attempt + 1)
+    echo "    [$postgresql_connection_attempt/$postgresql_connection_max_attempts] Waiting for postgresql service (this may take a while)..."
+    if [ $postgresql_connection_attempt -eq $postgresql_connection_max_attempts ]
+    then
+      echo "postgresql initialisation error" 1>&2
+      exit 1
+    fi
+    sleep 10
+done
+echo "postgresql is up and running"
+
+# edx-platform database
+psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }} -c "CREATE DATABASE {{ POSTGRESQL_OPENEDX_DB }};" 2>/dev/null || echo "Database {{ POSTGRESQL_OPENEDX_DB }} already exists"
+psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }} -c "CREATE USER {{ POSTGRESQL_OPENEDX_USER }} WITH PASSWORD '{{ POSTGRESQL_OPENEDX_PASSWORD }}';" 2>/dev/null || echo "User {{ POSTGRESQL_OPENEDX_USER }} already exists"
+psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }} -c "GRANT ALL PRIVILEGES ON DATABASE {{ POSTGRESQL_OPENEDX_DB }} TO {{ POSTGRESQL_OPENEDX_USER }};"
+psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }}/{{ POSTGRESQL_OPENEDX_DB }} -c "GRANT ALL ON SCHEMA public TO {{ POSTGRESQL_OPENEDX_USER }};"
