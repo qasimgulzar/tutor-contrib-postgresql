@@ -3,6 +3,8 @@ from glob import glob
 
 import click
 import importlib_resources
+import typing as t
+
 from tutor import hooks
 
 from .__about__ import __version__
@@ -10,7 +12,7 @@ from .__about__ import __version__
 ########################################
 # CONFIGURATION
 ########################################
-config: dict[str, dict[str, str | int]] = {
+config: dict[str, dict[str, t.Union[str, int]]] = {
     "defaults": {
         "VERSION": __version__,
         "IMAGE": "postgres:14-alpine",
@@ -94,7 +96,9 @@ for service, template_path in MY_INIT_TASKS:
     with open(full_path, encoding="utf-8") as init_task_file:
         init_task: str = init_task_file.read()
     # Raise the priority of the init job so that the DB is initialized before the migrations are applied
-    hooks.Filters.CLI_DO_INIT_TASKS.add_item((service, init_task), priority=hooks.priorities.HIGH)
+    hooks.Filters.CLI_DO_INIT_TASKS.add_item(
+        (service, init_task), priority=hooks.priorities.HIGH
+    )
 
 ########################################
 # DOCKER IMAGE MANAGEMENT
