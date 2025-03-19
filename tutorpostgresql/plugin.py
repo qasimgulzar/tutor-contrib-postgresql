@@ -3,6 +3,9 @@ from glob import glob
 
 import click
 import importlib_resources
+import shlex
+import typing as t
+
 from tutor import hooks
 
 from .__about__ import __version__
@@ -10,13 +13,13 @@ from .__about__ import __version__
 ########################################
 # CONFIGURATION
 ########################################
-config = {
+config: dict[str, dict[str, t.Union[str, int]]] = {
     "defaults": {
         "VERSION": __version__,
         "IMAGE": "postgres:14-alpine",
         "HOST": "postgresql",
         "PORT": 5432,
-        "ROOT_USER": "openedx",
+        "ROOT_USER": "postgres",
         "OPENEDX_DB": "openedx",
         "OPENEDX_USER": "openedx",
     },
@@ -94,7 +97,9 @@ for service, template_path in MY_INIT_TASKS:
     with open(full_path, encoding="utf-8") as init_task_file:
         init_task: str = init_task_file.read()
     # Raise the priority of the init job so that the DB is initialized before the migrations are applied
-    hooks.Filters.CLI_DO_INIT_TASKS.add_item((service, init_task), priority=hooks.priorities.HIGH)
+    hooks.Filters.CLI_DO_INIT_TASKS.add_item(
+        (service, init_task), priority=hooks.priorities.HIGH
+    )
 
 ########################################
 # DOCKER IMAGE MANAGEMENT
@@ -212,6 +217,34 @@ for path in glob(str(importlib_resources.files("tutorpostgresql") / "patches" / 
 # Now, you can run your job like this:
 #   $ tutor local do say-hi --name="Qasim Gulzar"
 
+
+@click.command(context_settings={"ignore_unknown_options": True})
+@click.option(
+    "--database",
+    is_flag=False,
+    nargs=1,
+    default="{{ POSTGRESQL_OPENEDX_DB }}",
+    show_default=True,
+    required=True,
+    type=str,
+    help="Database to connect to when the shell executes.",
+)
+@click.argument("args", nargs=-1)
+def postgresqlshell(database: str, args: list[str]) -> t.Iterable[tuple[str, str]]:
+    """
+    Open an PostgreSQL shell as root connected to the openedx database
+
+    Extra arguments will be passed to the `postgressql` command verbatim. For instance, to
+    show tables from the "openedx" database, run `do postgresqlshell -c '\dt'.
+    """
+    command = "psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }}"
+    command += f"/{database}"
+    if args:
+        command += " " + shlex.join(args)  # pylint: disable=protected-access
+    yield ("postgresql", command)
+
+
+hooks.Filters.CLI_DO_COMMANDS.add_item(postgresqlshell)
 
 #######################################
 # CUSTOM CLI COMMANDS
