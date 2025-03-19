@@ -217,6 +217,7 @@ for path in glob(str(importlib_resources.files("tutorpostgresql") / "patches" / 
 # Now, you can run your job like this:
 #   $ tutor local do say-hi --name="Qasim Gulzar"
 
+
 @click.command(context_settings={"ignore_unknown_options": True})
 @click.option(
     "--database",
@@ -241,6 +242,7 @@ def postgresqlshell(database: str, args: list[str]) -> t.Iterable[tuple[str, str
     if args:
         command += " " + shlex.join(args)  # pylint: disable=protected-access
     yield ("postgresql", command)
+
 
 hooks.Filters.CLI_DO_COMMANDS.add_item(postgresqlshell)
 
