@@ -6,13 +6,17 @@ import importlib_resources
 import shlex
 import typing as t
 
-from tutor import hooks
-
+from tutor import hooks, env
+from tutor.hooks import priorities
 from .__about__ import __version__
 
 ########################################
 # CONFIGURATION
 ########################################
+
+tasks = [task for task in hooks.Filters.CLI_DO_INIT_TASKS.iterate() if task[0] != 'mysql']
+hooks.Filters.CLI_DO_INIT_TASKS.clear()
+hooks.Filters.CLI_DO_INIT_TASKS.add_items(tasks)
 config: dict[str, dict[str, t.Union[str, int]]] = {
     "defaults": {
         "VERSION": __version__,
@@ -155,11 +159,12 @@ hooks.Filters.IMAGES_PUSH.add_items(
 #  this section as-is :)
 ########################################
 
-hooks.Filters.ENV_TEMPLATE_ROOTS.add_items(
+tp=hooks.Filters.ENV_TEMPLATE_ROOTS.apply(
     # Root paths for template files, relative to the project root.
     [
         str(importlib_resources.files("tutorpostgresql") / "templates"),
-    ]
+    ],
+    priority=priorities.HIGH
 )
 
 hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
@@ -235,7 +240,7 @@ def postgresqlshell(database: str, args: list[str]) -> t.Iterable[tuple[str, str
     Open an PostgreSQL shell as root connected to the openedx database
 
     Extra arguments will be passed to the `postgressql` command verbatim. For instance, to
-    show tables from the "openedx" database, run `do postgresqlshell -c '\dt'.
+    show tables from the "openedx" database, run `do postgresqlshell -c 'dt'.
     """
     command = "psql postgresql://{{ POSTGRESQL_ROOT_USER }}:{{ POSTGRESQL_ROOT_PASSWORD }}@{{ POSTGRESQL_HOST }}:{{ POSTGRESQL_PORT }}"
     command += f"/{database}"

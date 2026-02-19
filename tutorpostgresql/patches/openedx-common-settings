@@ -1,0 +1,11 @@
+DATABASES["default"] = {
+    'ATOMIC_REQUESTS': True,
+    'CONN_MAX_AGE': 0,
+    'ENGINE': 'django.db.backends.postgresql',
+    'HOST': "{{ POSTGRESQL_HOST }}",
+    'NAME': "{{ POSTGRESQL_OPENEDX_DB }}",
+    'OPTIONS': {},
+    'PASSWORD': "{{ POSTGRESQL_OPENEDX_PASSWORD }}",
+    'PORT': {{ POSTGRESQL_PORT }},
+    'USER': "{{ POSTGRESQL_OPENEDX_USER }}"
+}
